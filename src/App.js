@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Link, NavLink } from 'react-router-dom';
+import { BrowserRouter as Router, Link } from 'react-router-dom';
 import Route from 'react-router-dom/Route';
-import logo from './logo.svg';
 import './App.css';
 import cat from './keyboardCat.gif';
 import hello from './hello.gif';
-import start from './start.gif';
+import keyboard from './keyboard.png'
 import { generate } from './utils/words';
 import useKeyPress from './hooks/useKeyPress';
 import { currentTime } from './utils/time';
 
 const initialWords = generate();
-//const initialWords = "와 있 안녕하세요! 타이핑 연습하자! 빨리 치고 싶어요... 시작 오늘은 가게에 가서 사과를 샀다. 아가 일이 감사합니다 ㅁㄴㅇㄹ ㅁㄴㅇ ㅁㄴㅇㄹ ㅁㄴㅇㄹ ㅁㄴㅇ ㅁㄴㅇㄹ ㅁㄴㅇㄹ ㅁㄴㅇ ㄹㅁㄴㅇ ㅁㄴㅇㄹ ㅁㄴㅇ ㄹㅁㄴㅇㄹ ㅁㄴㅇ ㄹㅁㄴㅇㄹ "
+//const initialWords = "와 원 있 안녕하세요! 타이핑 연습하자! 빨리 치고 싶어요... 시작 오늘은 가게에 가서 사과를 샀다. 아가 일이 감사합니다 ㅁㄴㅇㄹ ㅁㄴㅇ ㅁㄴㅇㄹ ㅁㄴㅇㄹ ㅁㄴㅇ ㅁㄴㅇㄹ ㅁㄴㅇㄹ ㅁㄴㅇ ㄹㅁㄴㅇ ㅁㄴㅇㄹ ㅁㄴㅇ ㄹㅁㄴㅇㄹ ㅁㄴㅇ ㄹㅁㄴㅇㄹ "
 console.log(initialWords);
 let block = '';
 
@@ -49,6 +48,7 @@ function App() {
       numBackSp++;
     }
     else {
+      key = romanToHangul(key);
       block += key;
     }
     console.log("Key: " + key);
@@ -100,7 +100,7 @@ function App() {
                 <div className="App">
                   <header className="App-header">
                     <p>
-                    Welcome to TypeKR! Let's Practice typing in Korean!
+                    Welcome to TypeKR! Let's practice typing in Korean!
                   </p>
                     <img className="gif-player" width="500" src={cat} alt="Keyboard Cat"/>
                     <p className="Character">
@@ -121,7 +121,7 @@ function App() {
                     <p>
                       You may now begin typing! 시작!
                     </p>
-                    <img className="gif-player" src={start} alt="Welcome Text"/>
+                    <img className="gif-player" src={keyboard} alt="Welcome Text"/>
                     <p className="Character">
                       <span className="Character-out">
                         {(leftPadding + outgoingChars).slice(-20)}
@@ -130,7 +130,7 @@ function App() {
                       <span>{incomingChars.substr(0, 20)}</span>
                     </p>
                     <h3>
-                      |: { block }
+                      : { block }
                     </h3>
                     <h3>
                       WPM: {wpm}
@@ -148,6 +148,11 @@ function App() {
   );
 }
 
+/**
+ * Takes a string of Jamo and attempts to create a valid Hangul syllable block
+ * @param s - String of characters
+ * @returns {string|*} - Syllable block in Hangul (Korean written language)
+ */
 function joinHangul(s) {
   const initialIndex = 588;
   const medialIndex = 28;
@@ -179,7 +184,6 @@ function joinHangul(s) {
     if (middle.includes(s.charAt(2))) {
       let c1 = initial.indexOf(s.charAt(0));
       let c2 = joinJamo(s.charAt(1), s.charAt(2));
-      console.log("C2: " + c2);
       c2 = middle.indexOf(c2);
       let f = (c1 * 588) + (c2 * 28) + 44032;
       let hangul = String.fromCharCode(f);
@@ -190,7 +194,6 @@ function joinHangul(s) {
       let c1 = initial.indexOf(s.charAt(0));
       let c2 = middle.indexOf(s.charAt(1));
       let c3 = final.indexOf(s.charAt(2));
-      console.log('c3: ' + c3);
       let f = (c1 * 588) + (c2 * 28) + c3 + 44032;
       let hangul = String.fromCharCode(f);
       return hangul;
@@ -208,10 +211,10 @@ function joinHangul(s) {
       let hangul = String.fromCharCode(f);
       return hangul;
     }
-    // Possibility 1: single initial, double middle, single final: 왓
+    // Possibility 1: single initial, double middle, single final: 원 ㅇ ㅜ ㅓ ㄴ
     if (middle.includes(s.charAt(1)) && middle.includes(s.charAt(2))) {
       let c1 = initial.indexOf(s.charAt(0));
-      let c2 = joinHangul(s.charAt(1), s.charAt(2));
+      let c2 = joinJamo(s.charAt(1), s.charAt(2));
       c2 = middle.indexOf(c2);
       let c3 = final.indexOf(s.charAt(3));
       let f = (c1 * 588) + (c2 * 28) + c3 + 44032;
@@ -221,22 +224,16 @@ function joinHangul(s) {
     // Possibility 2: double initial added manually: ㅃ typed as ㅂㅂ
     // come back to fix later, since this condition only occurs with improper typing technique
  }
-/**
-  let a = 'ㅁㅏ';
-  let z = '마'
-  let b = 'ㅏ';
-  let y = initial.indexOf('ㄱ');
-  let e = middle.indexOf('ㅏ')
-  let g = (y * 588) + (e * 28) + 44032;
-  let d = String.fromCharCode(g);
-  let s1 = s.charAt()
 
-
-  let hangul = (s.charAt(0) * 588) + (s.charAt(1) * 28);
- **/
   return s;
 }
 
+/**
+ * Takes to Jamo Characters and checks if they can be combined into one Hangul char.
+ * @param s1 - The first char to be merged
+ * @param s2 - The second char to be merged
+ * @returns {string|*|string} - Single Hangul block
+ */
 function joinJamo(s1, s2) {
   const initial = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
   const middle = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'];
@@ -292,5 +289,35 @@ function joinJamo(s1, s2) {
   // could not combine into single block
   return s1+s2;
 }
+
+/**
+ * Takes roman(English) letters as input and maps the letter to the appropriate Korean Jamo(letter)
+ * This eliminates the need to have korean set up on your keyboard.
+ * @param keyStroke - Returns a single Jamo  (korean letter)
+ */
+function romanToHangul(keyStroke) {
+  // Parallel arrays mapping english letter to korean letter
+  const engl = [
+      'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
+      'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',
+      'z', 'x', 'c', 'v', 'b', 'n', 'm',
+      'Q', 'W', 'E', 'R', 'T', 'O', 'P' // Caps for doubled letters
+  ];
+  const kr = [
+      'ㅂ', 'ㅈ', 'ㄷ', 'ㄱ', 'ㅅ', 'ㅛ', 'ㅕ', 'ㅑ', 'ㅐ', 'ㅔ',
+      'ㅁ', 'ㄴ', 'ㅇ', 'ㄹ', 'ㅎ', 'ㅗ', 'ㅓ', 'ㅏ', 'ㅣ',
+      'ㅋ', 'ㅌ', 'ㅊ', 'ㅍ', 'ㅠ', 'ㅜ', 'ㅡ',
+      'ㅃ', 'ㅉ', 'ㄸ', 'ㄲ', 'ㅆ', 'ㅒ', 'ㅖ' // Caps for doubled letters
+  ];
+
+  if (engl.includes(keyStroke)) {
+    let x = engl.indexOf(keyStroke);
+    return kr[x];
+  }
+  // Already korean input? Just return
+  // Maybe add detection for other letters that happen to be capital.
+  return keyStroke
+}
+
 
 export default App;
